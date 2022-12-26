@@ -1,47 +1,82 @@
-@_implementationOnly import Foundation
 @_implementationOnly import Internal
 
 public enum ExceptionCatcher {
-	/**
-	Catch a Objective-C exception.
+    /// Catch an Objective-C exception.
+    ///    ```
+    ///    import ExceptionCatcher
+    ///
+    ///    final class Foo: NSObject {}
+    ///
+    ///    do {
+    ///        let value = try ExceptionCatcher.rethrow {
+    ///            Foo().value(forKey: "nope")
+    ///        }
+    ///        print("Value: ", value)
+    ///    } catch {
+    ///        print("Error: ", error.localizedDescription)
+    ///        // Error: [<ExceptionCatcherTests.Foo 0x6000034c0030> valueForUndefinedKey:]: this class is not key value coding-compliant for the key nope.
+    ///    }
+    ///    ```
+    /// - Parameter callback: the throwing part of the code.
+    /// - Returns: The value returned from the given callback.
+    @discardableResult public static func rethrow<T>(callback: () throws -> T) throws -> T {
+        var returnValue: T!
+        var returnError: Error?
 
-	- Returns: The value returned from the given callback.
+        try _ExceptionCatcher.rethrowException {
+            do {
+                returnValue = try callback()
+            } catch {
+                returnError = error
+            }
+        }
 
-	```swift
-	import Foundation
-	import ExceptionCatcher
+        if let returnError {
+            throw returnError
+        }
+        
+        return returnValue
+    }
+}
 
-	final class Foo: NSObject {}
+extension ExceptionCatcher {
+    /// Catch an Objective-C exception.
+    ///    ```
+    ///    import ExceptionCatcher
+    ///
+    ///    final class Foo: NSObject {}
+    ///
+    ///    let result = ExceptionCatcher.catch {
+    ///        Foo().value(forKey: "nope")
+    ///    }
+    ///    switch result {
+    ///    case let .exception(exception):
+    ///        print("Error: ", exception.description)
+    ///        // Error: [<ExceptionCatcherTests.Foo 0x6000034c0030> valueForUndefinedKey:]: this class is not key value coding-compliant for the key nope.
+    ///    default: break
+    ///    }
+    ///    ```
+    /// - Parameter callback: the throwing part of the code.
+    /// - Returns: The value returned from the given callback.
+    @discardableResult public static func `catch`<T>(callback: () throws -> T) -> ExceptionResult<T> {
+        var returnValue: T?
+        var returnError: Error?
 
-	do {
-		let value = try ExceptionCatcher.catch {
-			return Foo().value(forKey: "nope")
-		}
+        let exception = _ExceptionCatcher.catchException {
+            do {
+                returnValue = try callback()
+            } catch {
+                returnError = error
+            }
+        }
 
-		print("Value:", value)
-	} catch {
-		print("Error:", error.localizedDescription)
-		//=> Error: The operation couldn’t be completed. [valueForUndefinedKey:]: this class is not key value coding-compliant for the key nope.
-	}
-	```
-	*/
-	@discardableResult
-	public static func `catch`<T>(callback: () throws -> T) throws -> T {
-		var returnValue: T!
-		var returnError: Error?
-
-		try _ExceptionCatcher.catchException {
-			do {
-				returnValue = try callback()
-			} catch {
-				returnError = error
-			}
-		}
-
-		if let returnError {
-			throw returnError
-		}
-
-		return returnValue
-	}
+        if let exception {
+            return .exception(exception)
+        } else if let returnError {
+            return .error(returnError)
+        } else if let returnValue {
+            return .success(returnValue)
+        }
+        preconditionFailure("Either an error, an exception or a result should be presented!")
+    }
 }
