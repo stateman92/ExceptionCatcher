@@ -1,0 +1,14 @@
+{
+  "pins" : [
+    {
+      "identity" : "exceptioncatcher",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/stateman92/ExceptionCatcher",
+      "state" : {
+        "revision" : "0f8ce30c241b3e4fec70d2cea809a1204a99abf6",
+        "version" : "2.0.8"
+      }
+    }
+  ],
+  "version" : 2
+}
