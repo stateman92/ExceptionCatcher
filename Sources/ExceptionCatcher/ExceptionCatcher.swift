@@ -34,7 +34,7 @@ public enum ExceptionCatcher {
         if let returnError {
             throw returnError
         }
-        
+
         return returnValue
     }
 }

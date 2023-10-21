@@ -15,7 +15,7 @@ Add the following to `Package.swift`:
 .package(url: "https://github.com/stateman92/ExceptionCatcher", exact: .init(2, 0, 8))
 ```
 
-[Or add the package in Xcode.](https://developer.apple.com/documentation/xcode/adding_package_dependencies_to_your_app)
+[Or add the package in Xcode.](https://developer.apple.com/documentation/xcode/adding-package-dependencies-to-your-app)
 
 ## Usage
 
